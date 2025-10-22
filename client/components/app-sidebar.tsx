@@ -64,9 +64,9 @@ export function AppSidebar() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">John Doe</p>
+            <p className="text-sm font-medium truncate">Janko Mrkvicka</p>
             <p className="text-xs text-muted-foreground truncate">
-              john@example.com
+              jankomrkvicka@seas.sk
             </p>
           </div>
           <button className="text-muted-foreground hover:text-foreground transition-colors">

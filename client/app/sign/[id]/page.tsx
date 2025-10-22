@@ -106,12 +106,12 @@ export default function SignDocumentPage() {
       },
     ]);
 
-    toast({
-      title: "Signature placed",
-      description: `Signature placed at position (${Math.round(
-        x
-      )}, ${Math.round(y)})`,
-    });
+    // toast({
+    //   title: "Signature placed",
+    //   description: `Signature placed at position (${Math.round(
+    //     x
+    //   )}, ${Math.round(y)})`,
+    // });
   };
 
   const handleRemoveSignature = (index: number) => {
@@ -148,8 +148,8 @@ export default function SignDocumentPage() {
       const signedDoc = await applySignature(
         document.id,
         selectedSignatureId,
-        Math.round(firstPosition.x),
-        Math.round(firstPosition.y)
+        Math.round(firstPosition.x) * 14,
+        Math.round(firstPosition.y) * 17
       );
 
       toast({

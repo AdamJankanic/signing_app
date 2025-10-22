@@ -136,7 +136,7 @@ export function DocumentViewer({
       </div>
 
       {/* Document Display */}
-      <div className="relative border rounded-lg bg-white overflow-auto max-h-[800px]">
+      <div className="relative border rounded-lg bg-white">
         <div
           className="relative"
           style={{

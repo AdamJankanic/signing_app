@@ -41,6 +41,12 @@ watchfiles = "==1.1.1"
 websockets = "==15.0.1"
 
 [dev-packages]
+pytest = "*"
+pytest-asyncio = "*"
+httpx = "*"
+pytest-cov = "*"
+faker = "*"
+email-validator = "*"
 
 [requires]
 python_version = "3.13"

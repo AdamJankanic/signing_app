@@ -18,13 +18,13 @@ Build a simple electronic signature application prototype that allows users to d
 
 **Goal:** Establish project foundation and development environment
 
-- [ ] Review complete specification document
-- [ ] Set up project repository structure
-- [ ] Choose technology stack (Frontend + Backend)
-- [ ] Set up development environment
-- [ ] Create basic project scaffolding
-- [ ] Set up version control (Git)
-- [ ] Define data models and database schema
+- [x] Review complete specification document
+- [x] Set up project repository structure
+- [x] Choose technology stack (Frontend + Backend)
+- [x] Set up development environment
+- [x] Create basic project scaffolding
+- [x] Set up version control (Git)
+- [x] Define data models and database schema
 
 **Deliverables:**
 
@@ -38,23 +38,23 @@ Build a simple electronic signature application prototype that allows users to d
 
 **Goal:** Build essential API endpoints and database functionality
 
-- [ ] Set up FastAPI project structure
-- [ ] Configure SQLite/PostgreSQL database with SQLAlchemy
-- [ ] Create user authentication system
+- [x] Set up FastAPI project structure
+- [x] Configure SQLite/PostgreSQL database with SQLAlchemy
+- [x] Create user authentication system
   - User registration endpoint
   - User login endpoint (JWT token generation)
   - Token verification middleware
   - Password hashing with bcrypt
-- [ ] Implement document management
+- [x] Implement document management
   - Upload document endpoint (using UploadFile)
   - Store document metadata in database
   - Retrieve document endpoint
   - List user documents endpoint
-- [ ] Create signature functionality
+- [x] Create signature functionality
   - Save signature data (base64 image)
   - Store signature with user association
   - Link signature to document
-- [ ] Test API with FastAPI's automatic docs (/docs)
+- [x] Test API with FastAPI's automatic docs (/docs)
 
 **Deliverables:**
 

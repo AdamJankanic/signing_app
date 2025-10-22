@@ -19,6 +19,14 @@ from app.config import get_settings
 router = APIRouter()
 settings = get_settings()
 
+@router.options("/register")
+@router.options("/login")
+@router.options("/me")
+@router.options("/logout")
+async def options_handler():
+    """Handle OPTIONS requests for CORS preflight"""
+    return {"message": "OK"}
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """

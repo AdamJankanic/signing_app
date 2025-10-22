@@ -23,17 +23,20 @@ import {
 } from "@/components/ui/select";
 import { Upload, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { uploadDocument } from "@/lib/api";
 
 interface UploadModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onUploadSuccess?: () => void;
 }
 
-export function UploadModal({ open, onOpenChange }: UploadModalProps) {
+export function UploadModal({ open, onOpenChange, onUploadSuccess }: UploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -85,27 +88,45 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     }
   };
 
-  const handleUpload = () => {
-    if (!file || !title) {
+  const handleUpload = async () => {
+    if (!file) {
       toast({
         title: "Missing information",
-        description: "Please fill in all required fields",
+        description: "Please select a file to upload",
         variant: "destructive",
       });
       return;
     }
 
-    // Simulate upload
-    toast({
-      title: "Document uploaded",
-      description: "Your document has been uploaded successfully",
-    });
+    setIsUploading(true);
+    
+    try {
+      await uploadDocument(file, title, description);
+      
+      toast({
+        title: "Document uploaded",
+        description: "Your document has been uploaded successfully",
+      });
 
-    // Reset and close
-    setFile(null);
-    setTitle("");
-    setDescription("");
-    onOpenChange(false);
+      // Reset and close
+      setFile(null);
+      setTitle("");
+      setDescription("");
+      onOpenChange(false);
+      
+      // Notify parent component to refresh documents list
+      if (onUploadSuccess) {
+        onUploadSuccess();
+      }
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload document",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeFile = () => {
@@ -195,10 +216,19 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
           </div>
         </div>
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            disabled={isUploading}
+          >
             Cancel
           </Button>
-          <Button onClick={handleUpload}>Upload & Continue</Button>
+          <Button 
+            onClick={handleUpload}
+            disabled={isUploading || !file}
+          >
+            {isUploading ? "Uploading..." : "Upload & Continue"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

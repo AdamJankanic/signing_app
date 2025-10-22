@@ -4,13 +4,19 @@ Signature Management Routes
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import base64
+import uuid
+from pathlib import Path
 
 from app.database import get_db
 from app.models import User, Signature
 from app.schemas import SignatureCreate, SignatureResponse, MessageResponse
 from app.utils.auth import get_current_user
+from app.utils.file_handler import delete_file
+from app.config import get_settings
 
 router = APIRouter()
+settings = get_settings()
 
 @router.post("/create", response_model=SignatureResponse, status_code=status.HTTP_201_CREATED)
 async def create_signature(
@@ -27,10 +33,41 @@ async def create_signature(
             detail="Signature type must be 'drawn' or 'typed'"
         )
     
-    # Create signature record
+    # Decode base64 signature data and save as file
+    try:
+        # Remove data URL prefix if present (e.g., "data:image/png;base64,")
+        signature_base64 = signature_data.signature_data
+        if "base64," in signature_base64:
+            signature_base64 = signature_base64.split("base64,")[1]
+        
+        # Decode base64 to bytes
+        signature_bytes = base64.b64decode(signature_base64)
+        
+        # Create upload directory if it doesn't exist
+        upload_dir = Path(settings.upload_dir) / "signatures"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate unique filename
+        unique_filename = f"{uuid.uuid4()}.png"
+        file_path = upload_dir / unique_filename
+        
+        # Write file to disk
+        with open(file_path, "wb") as f:
+            f.write(signature_bytes)
+        
+        # Store relative path for database
+        relative_path = f"uploads/signatures/{unique_filename}"
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid signature data: {str(e)}"
+        )
+    
+    # Create signature record with file path
     new_signature = Signature(
         user_id=current_user.id,
-        signature_data=signature_data.signature_data,
+        signature_data=relative_path,  # Store file path instead of base64
         signature_type=signature_data.signature_type
     )
     
@@ -92,6 +129,10 @@ async def delete_signature(
             detail="Signature not found"
         )
     
+    # Delete file from disk
+    delete_file(signature.signature_data)
+    
+    # Delete from database
     db.delete(signature)
     db.commit()
     

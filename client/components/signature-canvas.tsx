@@ -10,11 +10,16 @@ import { Label } from "@/components/ui/label";
 import { RotateCcw, Check, X } from "lucide-react";
 
 interface SignatureCanvasProps {
-  onSave: (dataUrl: string) => void;
+  onSave: (dataUrl: string, signatureType: "drawn" | "typed") => void;
   onCancel: () => void;
+  isSaving?: boolean;
 }
 
-export function SignatureCanvas({ onSave, onCancel }: SignatureCanvasProps) {
+export function SignatureCanvas({
+  onSave,
+  onCancel,
+  isSaving = false,
+}: SignatureCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureType, setSignatureType] = useState<"draw" | "type">("draw");
@@ -140,7 +145,9 @@ export function SignatureCanvas({ onSave, onCancel }: SignatureCanvasProps) {
     if (!canvas || isEmpty) return;
 
     const dataUrl = canvas.toDataURL("image/png");
-    onSave(dataUrl);
+    // Map component type to API type
+    const apiType = signatureType === "draw" ? "drawn" : "typed";
+    onSave(dataUrl, apiType);
   };
 
   return (
@@ -192,18 +199,18 @@ export function SignatureCanvas({ onSave, onCancel }: SignatureCanvasProps) {
       </Tabs>
 
       <div className="flex justify-between gap-3">
-        <Button variant="outline" onClick={clearCanvas}>
+        <Button variant="outline" onClick={clearCanvas} disabled={isSaving}>
           <RotateCcw className="h-4 w-4 mr-2" />
           Clear
         </Button>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={isSaving}>
             <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isEmpty}>
+          <Button onClick={handleSave} disabled={isEmpty || isSaving}>
             <Check className="h-4 w-4 mr-2" />
-            Save Signature
+            {isSaving ? "Saving..." : "Save Signature"}
           </Button>
         </div>
       </div>

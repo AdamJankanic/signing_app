@@ -1,16 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Plus } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface SignatureSelectorProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSelect: (signatureUrl: string) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (signatureUrl: string) => void;
 }
 
 // Mock saved signatures
@@ -20,18 +26,24 @@ const mockSignatures = [
     dataUrl: "/handwritten-signature.png",
     createdAt: "2025-01-15",
   },
-]
+];
 
-export function SignatureSelector({ open, onOpenChange, onSelect }: SignatureSelectorProps) {
-  const router = useRouter()
-  const [signatures] = useState(mockSignatures)
+export function SignatureSelector({
+  open,
+  onOpenChange,
+  onSelect,
+}: SignatureSelectorProps) {
+  const router = useRouter();
+  const [signatures] = useState(mockSignatures);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Select Signature</DialogTitle>
-          <DialogDescription>Choose a signature to use for signing this document</DialogDescription>
+          <DialogDescription>
+            Choose a signature to use for signing this document
+          </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           {signatures.length > 0 ? (
@@ -60,8 +72,12 @@ export function SignatureSelector({ open, onOpenChange, onSelect }: SignatureSel
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <Plus className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No signatures found</h3>
-              <p className="text-muted-foreground mb-4">Create a signature first to use it for signing documents</p>
+              <h3 className="text-lg font-semibold mb-2">
+                No signatures found
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Create a signature first to use it for signing documents
+              </p>
             </div>
           )}
         </div>
@@ -69,8 +85,8 @@ export function SignatureSelector({ open, onOpenChange, onSelect }: SignatureSel
           <Button
             variant="outline"
             onClick={() => {
-              onOpenChange(false)
-              router.push("/signatures")
+              onOpenChange(false);
+              router.push("/signatures");
             }}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -82,5 +98,5 @@ export function SignatureSelector({ open, onOpenChange, onSelect }: SignatureSel
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

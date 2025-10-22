@@ -1,78 +1,90 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useCallback } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, X, FileText } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useCallback } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Upload, X, FileText } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UploadModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function UploadModal({ open, onOpenChange }: UploadModalProps) {
-  const [file, setFile] = useState<File | null>(null)
-  const [dragActive, setDragActive] = useState(false)
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [docType, setDocType] = useState("")
-  const { toast } = useToast()
+  const [file, setFile] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [docType, setDocType] = useState("");
+  const { toast } = useToast();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }, [])
+  }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
 
       if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        const droppedFile = e.dataTransfer.files[0]
+        const droppedFile = e.dataTransfer.files[0];
         if (droppedFile.type === "application/pdf") {
-          setFile(droppedFile)
-          if (!title) setTitle(droppedFile.name.replace(".pdf", ""))
+          setFile(droppedFile);
+          if (!title) setTitle(droppedFile.name.replace(".pdf", ""));
         } else {
           toast({
             title: "Invalid file type",
             description: "Please upload a PDF file",
             variant: "destructive",
-          })
+          });
         }
       }
     },
-    [title, toast],
-  )
+    [title, toast]
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0]
+      const selectedFile = e.target.files[0];
       if (selectedFile.type === "application/pdf") {
-        setFile(selectedFile)
-        if (!title) setTitle(selectedFile.name.replace(".pdf", ""))
+        setFile(selectedFile);
+        if (!title) setTitle(selectedFile.name.replace(".pdf", ""));
       } else {
         toast({
           title: "Invalid file type",
           description: "Please upload a PDF file",
           variant: "destructive",
-        })
+        });
       }
     }
-  }
+  };
 
   const handleUpload = () => {
     if (!file || !title || !docType) {
@@ -80,27 +92,27 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         title: "Missing information",
         description: "Please fill in all required fields",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Simulate upload
     toast({
       title: "Document uploaded",
       description: "Your document has been uploaded successfully",
-    })
+    });
 
     // Reset and close
-    setFile(null)
-    setTitle("")
-    setDescription("")
-    setDocType("")
-    onOpenChange(false)
-  }
+    setFile(null);
+    setTitle("");
+    setDescription("");
+    setDocType("");
+    onOpenChange(false);
+  };
 
   const removeFile = () => {
-    setFile(null)
-  }
+    setFile(null);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,7 +126,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
           {!file ? (
             <div
               className={`relative border-2 border-dashed rounded-lg p-12 text-center transition-colors ${
-                dragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-accent/50"
+                dragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50 hover:bg-accent/50"
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -128,9 +142,15 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium mb-2">Drag and drop your document here</p>
-              <p className="text-sm text-muted-foreground mb-4">or click to browse</p>
-              <p className="text-xs text-muted-foreground">Supported format: PDF • Max file size: 10MB</p>
+              <p className="text-lg font-medium mb-2">
+                Drag and drop your document here
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                or click to browse
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Supported format: PDF • Max file size: 10MB
+              </p>
             </div>
           ) : (
             <div className="border rounded-lg p-4 bg-accent/50">
@@ -140,7 +160,9 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <p className="text-sm text-muted-foreground">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={removeFile}>
                   <X className="h-4 w-4" />
@@ -172,22 +194,6 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="docType">
-                Document Type <span className="text-destructive">*</span>
-              </Label>
-              <Select value={docType} onValueChange={setDocType}>
-                <SelectTrigger id="docType">
-                  <SelectValue placeholder="Select document type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="contract">Contract</SelectItem>
-                  <SelectItem value="agreement">Agreement</SelectItem>
-                  <SelectItem value="form">Form</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
         <div className="flex justify-end gap-3">
@@ -198,5 +204,5 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

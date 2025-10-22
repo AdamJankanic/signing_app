@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { X, ZoomIn, ZoomOut } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { X, ZoomIn, ZoomOut } from "lucide-react";
 
 interface SignaturePosition {
-  x: number
-  y: number
-  page: number
-  signatureUrl: string
+  x: number;
+  y: number;
+  page: number;
+  signatureUrl: string;
 }
 
 interface DocumentViewerProps {
-  documentId: string
-  signaturePositions: SignaturePosition[]
-  onPlaceSignature: (x: number, y: number, page: number) => void
-  onRemoveSignature: (index: number) => void
+  documentId: string;
+  signaturePositions: SignaturePosition[];
+  onPlaceSignature: (x: number, y: number, page: number) => void;
+  onRemoveSignature: (index: number) => void;
 }
 
 export function DocumentViewer({
@@ -26,27 +26,37 @@ export function DocumentViewer({
   onPlaceSignature,
   onRemoveSignature,
 }: DocumentViewerProps) {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [zoom, setZoom] = useState(100)
-  const totalPages = 3 // Mock data
+  const [currentPage, setCurrentPage] = useState(1);
+  const [zoom, setZoom] = useState(100);
+  const totalPages = 3; // Mock data
 
   const handleDocumentClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    onPlaceSignature(x, y, currentPage)
-  }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    onPlaceSignature(x, y, currentPage);
+  };
 
   return (
     <div className="space-y-4">
       {/* Zoom Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(50, zoom - 10))}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setZoom(Math.max(50, zoom - 10))}
+          >
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium min-w-16 text-center">{zoom}%</span>
-          <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(200, zoom + 10))}>
+          <span className="text-sm font-medium min-w-16 text-center">
+            {zoom}%
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setZoom(Math.min(200, zoom + 10))}
+          >
             <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
@@ -68,39 +78,53 @@ export function DocumentViewer({
         {/* Mock document content */}
         <div className="p-12 space-y-4">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Employment Contract</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Employment Contract
+            </h2>
             <p className="text-sm text-gray-600">Page {currentPage}</p>
           </div>
           <div className="space-y-3 text-gray-800">
             <p className="text-sm leading-relaxed">
-              This Employment Agreement ("Agreement") is entered into as of January 15, 2025, by and between Company
-              Name ("Employer") and Employee Name ("Employee").
+              This Employment Agreement ("Agreement") is entered into as of
+              January 15, 2025, by and between Company Name ("Employer") and
+              Employee Name ("Employee").
             </p>
             <p className="text-sm leading-relaxed">
-              <strong>1. Position and Duties:</strong> The Employee agrees to serve as [Job Title] and shall perform all
-              duties and responsibilities associated with this position.
+              <strong>1. Position and Duties:</strong> The Employee agrees to
+              serve as [Job Title] and shall perform all duties and
+              responsibilities associated with this position.
             </p>
             <p className="text-sm leading-relaxed">
-              <strong>2. Compensation:</strong> The Employee shall receive an annual salary of $[Amount], payable in
-              accordance with the Employer's standard payroll practices.
+              <strong>2. Compensation:</strong> The Employee shall receive an
+              annual salary of $[Amount], payable in accordance with the
+              Employer's standard payroll practices.
             </p>
             <p className="text-sm leading-relaxed">
-              <strong>3. Benefits:</strong> The Employee shall be entitled to participate in all employee benefit plans
-              maintained by the Employer.
+              <strong>3. Benefits:</strong> The Employee shall be entitled to
+              participate in all employee benefit plans maintained by the
+              Employer.
             </p>
             {currentPage === 3 && (
               <div className="mt-12 pt-8 border-t border-gray-300">
                 <p className="text-sm font-semibold mb-4">Signatures:</p>
                 <div className="grid grid-cols-2 gap-8">
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Employee Signature:</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Employee Signature:
+                    </p>
                     <div className="border-b border-gray-400 h-16"></div>
-                    <p className="text-xs text-gray-500 mt-1">Date: _______________</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Date: _______________
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Employer Signature:</p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Employer Signature:
+                    </p>
                     <div className="border-b border-gray-400 h-16"></div>
-                    <p className="text-xs text-gray-500 mt-1">Date: _______________</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Date: _______________
+                    </p>
                   </div>
                 </div>
               </div>
@@ -132,8 +156,8 @@ export function DocumentViewer({
                   size="icon"
                   className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    onRemoveSignature(signaturePositions.indexOf(pos))
+                    e.stopPropagation();
+                    onRemoveSignature(signaturePositions.indexOf(pos));
                   }}
                 >
                   <X className="h-3 w-3" />
@@ -176,5 +200,5 @@ export function DocumentViewer({
         </Button>
       </div>
     </div>
-  )
+  );
 }

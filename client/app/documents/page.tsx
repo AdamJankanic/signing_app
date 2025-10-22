@@ -45,12 +45,25 @@ import {
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function DocumentsPage() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(
+    null
+  );
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -83,17 +96,14 @@ export default function DocumentsPage() {
   }, [isAuthenticated]);
 
   // Handle document deletion
-  const handleDelete = async (documentId: number, filename: string) => {
-    if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
-      return;
-    }
-
+  const handleDelete = async (documentId: number) => {
     try {
       await deleteDocument(documentId);
       toast({
         title: "Document deleted",
         description: "The document has been deleted successfully",
       });
+      setDocumentToDelete(null);
       // Refresh the list
       fetchDocuments();
     } catch (error) {
@@ -104,6 +114,10 @@ export default function DocumentsPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const openDeleteDialog = (doc: Document) => {
+    setDocumentToDelete(doc);
   };
 
   // Handle document download/view
@@ -277,9 +291,7 @@ export default function DocumentsPage() {
                               size="icon"
                               title="Delete"
                               className="text-destructive hover:text-destructive"
-                              onClick={() =>
-                                handleDelete(doc.id, doc.original_filename)
-                              }
+                              onClick={() => openDeleteDialog(doc)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -299,6 +311,34 @@ export default function DocumentsPage() {
           onOpenChange={setUploadModalOpen}
           onUploadSuccess={fetchDocuments}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog
+          open={!!documentToDelete}
+          onOpenChange={(open: boolean) => !open && setDocumentToDelete(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Document</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "
+                {documentToDelete?.original_filename}"? This action cannot be
+                undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  documentToDelete && handleDelete(documentToDelete.id)
+                }
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarInset>
     </SidebarProvider>
   );

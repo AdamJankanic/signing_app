@@ -1,41 +1,83 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Download, Check } from "lucide-react"
-import Link from "next/link"
-import { DocumentViewer } from "@/components/document-viewer"
-import { SignatureSelector } from "@/components/signature-selector"
-import { useToast } from "@/hooks/use-toast"
-
-// Mock document data
-const mockDocument = {
-  id: 1,
-  name: "Employment Contract.pdf",
-  uploadDate: "2025-01-15",
-  status: "unsigned" as const,
-  pages: 3,
-}
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Download, Check } from "lucide-react";
+import Link from "next/link";
+import { DocumentViewer } from "@/components/document-viewer";
+import { SignatureSelector } from "@/components/signature-selector";
+import { useToast } from "@/hooks/use-toast";
+import { getDocument, getDocumentUrl, type Document } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function SignDocumentPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [selectedSignature, setSelectedSignature] = useState<string | null>(null)
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [document, setDocument] = useState<Document | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedSignature, setSelectedSignature] = useState<string | null>(
+    null
+  );
   const [signaturePositions, setSignaturePositions] = useState<
     Array<{ x: number; y: number; page: number; signatureUrl: string }>
-  >([])
-  const [showSignatureSelector, setShowSignatureSelector] = useState(false)
+  >([]);
+  const [showSignatureSelector, setShowSignatureSelector] = useState(false);
+
+  // Fetch document data
+  useEffect(() => {
+    const fetchDocument = async () => {
+      if (!isAuthenticated || !params.id) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const doc = await getDocument(Number(params.id));
+
+        // Check if document is already signed
+        if (doc.is_signed) {
+          toast({
+            title: "Document already signed",
+            description: "This document has already been signed",
+            variant: "destructive",
+          });
+          router.push("/documents");
+          return;
+        }
+
+        setDocument(doc);
+      } catch (error) {
+        toast({
+          title: "Failed to load document",
+          description:
+            error instanceof Error ? error.message : "An error occurred",
+          variant: "destructive",
+        });
+        router.push("/documents");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDocument();
+  }, [isAuthenticated, params.id, router, toast]);
 
   const handlePlaceSignature = (x: number, y: number, page: number) => {
     if (!selectedSignature) {
-      setShowSignatureSelector(true)
-      return
+      setShowSignatureSelector(true);
+      return;
     }
 
     setSignaturePositions([
@@ -46,12 +88,12 @@ export default function SignDocumentPage() {
         page,
         signatureUrl: selectedSignature,
       },
-    ])
-  }
+    ]);
+  };
 
   const handleRemoveSignature = (index: number) => {
-    setSignaturePositions(signaturePositions.filter((_, i) => i !== index))
-  }
+    setSignaturePositions(signaturePositions.filter((_, i) => i !== index));
+  };
 
   const handleSignDocument = () => {
     if (signaturePositions.length === 0) {
@@ -59,19 +101,63 @@ export default function SignDocumentPage() {
         title: "No signatures placed",
         description: "Please place at least one signature on the document",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     toast({
       title: "Document signed",
       description: "Your document has been signed successfully",
-    })
+    });
 
     // Redirect to dashboard after signing
     setTimeout(() => {
-      router.push("/")
-    }, 1500)
+      router.push("/");
+    }, 1500);
+  };
+
+  // Handle download original document
+  const handleDownloadOriginal = () => {
+    if (document) {
+      const url = getDocumentUrl(document.file_path);
+      window.open(url, "_blank");
+    }
+  };
+
+  // Show loading state
+  if (isLoading || authLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  // Show error if document not found
+  if (!document) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <Card className="p-6 text-center">
+              <h2 className="text-xl font-semibold mb-2">Document not found</h2>
+              <p className="text-muted-foreground mb-4">
+                The document you're looking for doesn't exist
+              </p>
+              <Button asChild>
+                <Link href="/documents">Go to Documents</Link>
+              </Button>
+            </Card>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
   }
 
   return (
@@ -80,16 +166,21 @@ export default function SignDocumentPage() {
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
           <SidebarTrigger />
-          <Link href="/">
+          <Link href="/documents">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
           <div className="flex-1">
-            <h1 className="text-xl font-semibold">{mockDocument.name}</h1>
+            <h1 className="text-xl font-semibold">
+              {document.original_filename}
+            </h1>
           </div>
-          <Badge variant="secondary" className="bg-warning text-warning-foreground">
+          <Badge
+            variant="secondary"
+            className="bg-warning text-warning-foreground"
+          >
             Unsigned
           </Badge>
         </header>
@@ -129,7 +220,10 @@ export default function SignDocumentPage() {
                     </Button>
                   </div>
                 ) : (
-                  <Button className="w-full" onClick={() => setShowSignatureSelector(true)}>
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowSignatureSelector(true)}
+                  >
                     Select Signature
                   </Button>
                 )}
@@ -139,7 +233,9 @@ export default function SignDocumentPage() {
                 <h3 className="font-semibold mb-4">Instructions</h3>
                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
                   <li>Select a signature from your saved signatures</li>
-                  <li>Click on the document where you want to place your signature</li>
+                  <li>
+                    Click on the document where you want to place your signature
+                  </li>
                   <li>Review the placement and adjust if needed</li>
                   <li>Click "Sign Document" to complete</li>
                 </ol>
@@ -147,8 +243,12 @@ export default function SignDocumentPage() {
 
               <Card className="p-6">
                 <h3 className="font-semibold mb-4">Signatures Placed</h3>
-                <p className="text-2xl font-bold text-primary">{signaturePositions.length}</p>
-                <p className="text-sm text-muted-foreground">signature(s) on this document</p>
+                <p className="text-2xl font-bold text-primary">
+                  {signaturePositions.length}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  signature(s) on this document
+                </p>
               </Card>
 
               <div className="space-y-2">
@@ -161,11 +261,13 @@ export default function SignDocumentPage() {
                   <Check className="h-5 w-5 mr-2" />
                   Sign Document
                 </Button>
-                <Button variant="outline" className="w-full bg-transparent" asChild>
-                  <Link href="/">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Original
-                  </Link>
+                <Button
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={handleDownloadOriginal}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Original
                 </Button>
               </div>
             </div>
@@ -176,11 +278,11 @@ export default function SignDocumentPage() {
           open={showSignatureSelector}
           onOpenChange={setShowSignatureSelector}
           onSelect={(signatureUrl) => {
-            setSelectedSignature(signatureUrl)
-            setShowSignatureSelector(false)
+            setSelectedSignature(signatureUrl);
+            setShowSignatureSelector(false);
           }}
         />
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

@@ -105,7 +105,7 @@ export function DocumentViewer({
             <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {/* Mode Toggle */}
           <div className="flex items-center gap-2 border rounded-lg p-1">
@@ -128,7 +128,7 @@ export function DocumentViewer({
               Sign
             </Button>
           </div>
-          
+
           <div className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </div>
@@ -136,75 +136,76 @@ export function DocumentViewer({
       </div>
 
       {/* Document Display */}
-      <div className="relative">
+      <div className="relative border rounded-lg bg-white overflow-auto max-h-[800px]">
         <div
-          className="relative border rounded-lg bg-white overflow-hidden"
+          className="relative"
           style={{
-            minHeight: "600px",
             transform: `scale(${zoom / 100})`,
             transformOrigin: "top center",
           }}
         >
-          {/* PDF Viewer */}
-          {document.file_type === ".pdf" ? (
-            <iframe
-              src={`${documentUrl}#page=${currentPage}`}
-              className="w-full h-[800px] border-0"
-              title={document.original_filename}
-            />
-          ) : (
-            // For image files (PNG, JPG, JPEG)
-            <img
-              src={documentUrl}
-              alt={document.original_filename}
-              className="w-full h-auto"
-            />
-          )}
+          <div className="relative">
+            {/* PDF Viewer */}
+            {document.file_type === ".pdf" ? (
+              <iframe
+                src={`${documentUrl}#page=${currentPage}`}
+                className="w-full h-[800px] border-0"
+                title={document.original_filename}
+              />
+            ) : (
+              // For image files (PNG, JPG, JPEG)
+              <img
+                src={documentUrl}
+                alt={document.original_filename}
+                className="w-full h-auto"
+              />
+            )}
 
-          {/* Clickable overlay for signature placement */}
-          {placementMode && (
-            <div
-              className="absolute inset-0 cursor-crosshair bg-primary/5"
-              style={{ zIndex: 5 }}
-              onClick={handleDocumentClick}
-              title="Click to place signature"
-            />
-          )}
-
-          {/* Placed Signatures Overlay */}
-          {signaturePositions
-            .filter((pos) => pos.page === currentPage)
-            .map((pos, index) => (
+            {/* Clickable overlay for signature placement */}
+            {placementMode && (
               <div
-                key={index}
-                className="absolute group"
-                style={{
-                  left: `${pos.x}%`,
-                  top: `${pos.y}%`,
-                  transform: "translate(-50%, -50%)",
-                  zIndex: 10,
-                }}
-              >
-                <div className="relative border-2 border-primary rounded bg-white/90 p-2 shadow-lg">
-                  <img
-                    src={pos.signatureUrl}
-                    alt="Signature"
-                    className="h-12 w-32 object-contain"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveSignature(signaturePositions.indexOf(pos));
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
+                className="absolute inset-0 cursor-crosshair bg-primary/5"
+                style={{ zIndex: 5 }}
+                onClick={handleDocumentClick}
+                title="Click to place signature"
+              />
+            )}
+
+            {/* Placed Signatures Overlay */}
+            {signaturePositions
+              .filter((pos) => pos.page === currentPage)
+              .map((pos, index) => (
+                <div
+                  key={index}
+                  className="absolute group"
+                  style={{
+                    left: `${pos.x}%`,
+                    top: `${pos.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    zIndex: 10,
+                  }}
+                >
+                  <div className="relative border-2 border-primary rounded bg-white/90 p-2 shadow-lg">
+                    <img
+                      src={pos.signatureUrl}
+                      alt="Signature"
+                      className="h-12 w-32 object-contain"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveSignature(signaturePositions.indexOf(pos));
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
       </div>
 

@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, ZoomIn, ZoomOut } from "lucide-react";
+import { X, ZoomIn, ZoomOut, MousePointer2, Hand } from "lucide-react";
 import { getDocumentUrl, getDocument, type Document } from "@/lib/api";
 
 interface SignaturePosition {
@@ -33,6 +33,7 @@ export function DocumentViewer({
   const [documentUrl, setDocumentUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [placementMode, setPlacementMode] = useState(false);
 
   // Fetch document data
   useEffect(() => {
@@ -104,8 +105,33 @@ export function DocumentViewer({
             <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          Page {currentPage} of {totalPages}
+        
+        <div className="flex items-center gap-3">
+          {/* Mode Toggle */}
+          <div className="flex items-center gap-2 border rounded-lg p-1">
+            <Button
+              variant={!placementMode ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setPlacementMode(false)}
+              className="h-8"
+            >
+              <Hand className="h-4 w-4 mr-1" />
+              View
+            </Button>
+            <Button
+              variant={placementMode ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setPlacementMode(true)}
+              className="h-8"
+            >
+              <MousePointer2 className="h-4 w-4 mr-1" />
+              Sign
+            </Button>
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </div>
         </div>
       </div>
 
@@ -136,12 +162,14 @@ export function DocumentViewer({
           )}
 
           {/* Clickable overlay for signature placement */}
-          <div
-            className="absolute inset-0 cursor-crosshair"
-            style={{ zIndex: 5 }}
-            onClick={handleDocumentClick}
-            title="Click to place signature"
-          />
+          {placementMode && (
+            <div
+              className="absolute inset-0 cursor-crosshair bg-primary/5"
+              style={{ zIndex: 5 }}
+              onClick={handleDocumentClick}
+              title="Click to place signature"
+            />
+          )}
 
           {/* Placed Signatures Overlay */}
           {signaturePositions

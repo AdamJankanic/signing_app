@@ -47,9 +47,26 @@ async def apply_signature(
         )
     
     # Apply signature to document
+    # Note: signature.signature_data now contains file path, not base64
+    # We need to read the signature file
+    from pathlib import Path
+    signature_file_path = Path(signature.signature_data)
+    
+    if not signature_file_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Signature file not found"
+        )
+    
+    # Read signature file as base64 for processing
+    import base64
+    with open(signature_file_path, "rb") as f:
+        signature_bytes = f.read()
+        signature_base64 = base64.b64encode(signature_bytes).decode('utf-8')
+    
     signed_file_path = await apply_signature_to_document(
         document.file_path,
-        signature.signature_data,
+        signature_base64,
         signed_doc_data.signature_position_x,
         signed_doc_data.signature_position_y
     )

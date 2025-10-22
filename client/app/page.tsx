@@ -25,6 +25,7 @@ import {
   Eye,
   Trash2,
   PenTool,
+  ShieldCheck,
 } from "lucide-react";
 import { UploadModal } from "@/components/upload-modal";
 import {
@@ -40,6 +41,7 @@ import {
   listDocuments,
   deleteDocument,
   getDocumentUrl,
+  listSignedVersions,
   type Document,
 } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +53,9 @@ export default function DashboardPage() {
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [signedDocIds, setSignedDocIds] = useState<Map<number, number>>(
+    new Map()
+  ); // document_id -> signed_doc_id
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 

@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 interface SignatureSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (signatureUrl: string) => void;
+  onSelect: (signatureId: number, signatureUrl: string) => void;
 }
 
 export function SignatureSelector({
@@ -77,7 +77,7 @@ export function SignatureSelector({
                   <Card
                     key={signature.id}
                     className="p-4 cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => onSelect(signatureUrl)}
+                    onClick={() => onSelect(signature.id, signatureUrl)}
                   >
                     <div className="flex items-center justify-center h-24 bg-muted rounded-lg border">
                       <img

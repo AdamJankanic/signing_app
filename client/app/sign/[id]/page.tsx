@@ -16,7 +16,12 @@ import Link from "next/link";
 import { DocumentViewer } from "@/components/document-viewer";
 import { SignatureSelector } from "@/components/signature-selector";
 import { useToast } from "@/hooks/use-toast";
-import { getDocument, getDocumentUrl, type Document } from "@/lib/api";
+import {
+  getDocument,
+  getDocumentUrl,
+  applySignature,
+  type Document,
+} from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function SignDocumentPage() {
@@ -29,10 +34,14 @@ export default function SignDocumentPage() {
   const [selectedSignature, setSelectedSignature] = useState<string | null>(
     null
   );
+  const [selectedSignatureId, setSelectedSignatureId] = useState<number | null>(
+    null
+  );
   const [signaturePositions, setSignaturePositions] = useState<
     Array<{ x: number; y: number; page: number; signatureUrl: string }>
   >([]);
   const [showSignatureSelector, setShowSignatureSelector] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
 
   // Fetch document data
   useEffect(() => {
@@ -109,7 +118,7 @@ export default function SignDocumentPage() {
     setSignaturePositions(signaturePositions.filter((_, i) => i !== index));
   };
 
-  const handleSignDocument = () => {
+  const handleSignDocument = async () => {
     if (signaturePositions.length === 0) {
       toast({
         title: "No signatures placed",
@@ -119,15 +128,50 @@ export default function SignDocumentPage() {
       return;
     }
 
-    toast({
-      title: "Document signed",
-      description: "Your document has been signed successfully",
-    });
+    if (!selectedSignatureId || !document) {
+      toast({
+        title: "Error",
+        description: "Missing signature or document information",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Redirect to dashboard after signing
-    setTimeout(() => {
-      router.push("/");
-    }, 1500);
+    try {
+      setIsSigning(true);
+
+      // Apply each signature position to the document
+      // For now, we'll use the first signature position
+      // In a full implementation, you might need to support multiple signatures
+      const firstPosition = signaturePositions[0];
+
+      const signedDoc = await applySignature(
+        document.id,
+        selectedSignatureId,
+        Math.round(firstPosition.x),
+        Math.round(firstPosition.y)
+      );
+
+      toast({
+        title: "Document signed successfully",
+        description: "Your document has been signed and saved",
+      });
+
+      // Redirect to documents page after a short delay
+      setTimeout(() => {
+        router.push("/documents");
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to sign document:", error);
+      toast({
+        title: "Failed to sign document",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSigning(false);
+    }
   };
 
   // Handle download original document
@@ -270,10 +314,10 @@ export default function SignDocumentPage() {
                   className="w-full"
                   size="lg"
                   onClick={handleSignDocument}
-                  disabled={signaturePositions.length === 0}
+                  disabled={signaturePositions.length === 0 || isSigning}
                 >
                   <Check className="h-5 w-5 mr-2" />
-                  Sign Document
+                  {isSigning ? "Signing..." : "Sign Document"}
                 </Button>
                 <Button
                   variant="outline"
@@ -291,7 +335,8 @@ export default function SignDocumentPage() {
         <SignatureSelector
           open={showSignatureSelector}
           onOpenChange={setShowSignatureSelector}
-          onSelect={(signatureUrl) => {
+          onSelect={(signatureId, signatureUrl) => {
+            setSelectedSignatureId(signatureId);
             setSelectedSignature(signatureUrl);
             setShowSignatureSelector(false);
           }}

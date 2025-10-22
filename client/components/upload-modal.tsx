@@ -34,7 +34,6 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
   const [dragActive, setDragActive] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [docType, setDocType] = useState("");
   const { toast } = useToast();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -87,7 +86,7 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
   };
 
   const handleUpload = () => {
-    if (!file || !title || !docType) {
+    if (!file || !title) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields",
@@ -106,7 +105,6 @@ export function UploadModal({ open, onOpenChange }: UploadModalProps) {
     setFile(null);
     setTitle("");
     setDescription("");
-    setDocType("");
     onOpenChange(false);
   };
 

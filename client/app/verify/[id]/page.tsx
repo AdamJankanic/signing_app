@@ -393,10 +393,6 @@ export default function VerifyDocumentPage() {
               <Download className="h-5 w-5 mr-2" />
               Download Signed Document
             </Button>
-            <Button variant="outline" size="lg" onClick={handleDownloadSigned}>
-              <Download className="h-5 w-5 mr-2" />
-              Download Certificate
-            </Button>
           </div>
         </main>
       </SidebarInset>

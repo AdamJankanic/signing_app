@@ -80,6 +80,8 @@ export default function SignDocumentPage() {
       return;
     }
 
+    console.log("Placing signature at:", { x, y, page, signatureUrl: selectedSignature });
+    
     setSignaturePositions([
       ...signaturePositions,
       {
@@ -89,6 +91,11 @@ export default function SignDocumentPage() {
         signatureUrl: selectedSignature,
       },
     ]);
+
+    toast({
+      title: "Signature placed",
+      description: `Signature placed at position (${Math.round(x)}, ${Math.round(y)})`,
+    });
   };
 
   const handleRemoveSignature = (index: number) => {

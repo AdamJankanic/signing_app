@@ -112,13 +112,12 @@ export function DocumentViewer({
       {/* Document Display */}
       <div className="relative">
         <div
-          className="relative border rounded-lg bg-white overflow-hidden cursor-crosshair"
+          className="relative border rounded-lg bg-white overflow-hidden"
           style={{
             minHeight: "600px",
             transform: `scale(${zoom / 100})`,
             transformOrigin: "top center",
           }}
-          onClick={handleDocumentClick}
         >
           {/* PDF Viewer */}
           {document.file_type === ".pdf" ? (
@@ -135,6 +134,14 @@ export function DocumentViewer({
               className="w-full h-auto"
             />
           )}
+
+          {/* Clickable overlay for signature placement */}
+          <div
+            className="absolute inset-0 cursor-crosshair"
+            style={{ zIndex: 5 }}
+            onClick={handleDocumentClick}
+            title="Click to place signature"
+          />
 
           {/* Placed Signatures Overlay */}
           {signaturePositions

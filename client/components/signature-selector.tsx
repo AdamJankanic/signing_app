@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { listSignatures, getDocumentUrl, type Signature } from "@/lib/api";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
 
 interface SignatureSelectorProps {
   open: boolean;
@@ -19,22 +22,38 @@ interface SignatureSelectorProps {
   onSelect: (signatureUrl: string) => void;
 }
 
-// Mock saved signatures
-const mockSignatures = [
-  {
-    id: 1,
-    dataUrl: "/handwritten-signature.png",
-    createdAt: "2025-01-15",
-  },
-];
-
 export function SignatureSelector({
   open,
   onOpenChange,
   onSelect,
 }: SignatureSelectorProps) {
   const router = useRouter();
-  const [signatures] = useState(mockSignatures);
+  const { toast } = useToast();
+  const [signatures, setSignatures] = useState<Signature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      loadSignatures();
+    }
+  }, [open]);
+
+  const loadSignatures = async () => {
+    try {
+      setIsLoading(true);
+      const data = await listSignatures();
+      setSignatures(data);
+    } catch (error) {
+      console.error("Failed to load signatures:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load signatures. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,26 +65,34 @@ export function SignatureSelector({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          {signatures.length > 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Spinner />
+            </div>
+          ) : signatures.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {signatures.map((signature) => (
-                <Card
-                  key={signature.id}
-                  className="p-4 cursor-pointer hover:border-primary transition-colors"
-                  onClick={() => onSelect(signature.dataUrl)}
-                >
-                  <div className="flex items-center justify-center h-24 bg-muted rounded-lg border">
-                    <img
-                      src={signature.dataUrl || "/placeholder.svg"}
-                      alt="Signature"
-                      className="max-h-20 max-w-full object-contain"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    Created {new Date(signature.createdAt).toLocaleDateString()}
-                  </p>
-                </Card>
-              ))}
+              {signatures.map((signature) => {
+                const signatureUrl = getDocumentUrl(signature.signature_data);
+                return (
+                  <Card
+                    key={signature.id}
+                    className="p-4 cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => onSelect(signatureUrl)}
+                  >
+                    <div className="flex items-center justify-center h-24 bg-muted rounded-lg border">
+                      <img
+                        src={signatureUrl}
+                        alt="Signature"
+                        className="max-h-20 max-w-full object-contain"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center mt-2">
+                      Created{" "}
+                      {new Date(signature.created_at).toLocaleDateString()}
+                    </p>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">

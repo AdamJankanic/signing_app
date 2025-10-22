@@ -2,7 +2,7 @@
 
 import { FileText, Home, PenTool, Settings, LogOut, User } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -14,6 +14,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
@@ -24,6 +26,24 @@ const navigation = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
+    router.push("/");
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user?.username) return "U";
+    return user.username.substring(0, 2).toUpperCase();
+  };
 
   return (
     <Sidebar>
@@ -60,16 +80,22 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <Avatar>
             <AvatarFallback className="bg-primary text-primary-foreground">
-              <User className="h-5 w-5" />
+              {getUserInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Janko Mrkvicka</p>
+            <p className="text-sm font-medium truncate">
+              {user?.username || "User"}
+            </p>
             <p className="text-xs text-muted-foreground truncate">
-              jankomrkvicka@seas.sk
+              {user?.email || "user@example.com"}
             </p>
           </div>
-          <button className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={handleLogout}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title="Logout"
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>

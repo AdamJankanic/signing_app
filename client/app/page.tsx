@@ -70,6 +70,24 @@ export default function DashboardPage() {
       setIsLoading(true);
       const docs = await listDocuments();
       setDocuments(docs);
+
+      // Fetch signed document IDs for all signed documents
+      const signedDocs = docs.filter((doc) => doc.is_signed);
+      const newSignedDocIds = new Map<number, number>();
+      
+      for (const doc of signedDocs) {
+        try {
+          const signedVersions = await listSignedVersions(doc.id);
+          if (signedVersions && signedVersions.length > 0) {
+            // Use the most recent signed version
+            newSignedDocIds.set(doc.id, signedVersions[0].id);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch signed versions for document ${doc.id}:`, error);
+        }
+      }
+      
+      setSignedDocIds(newSignedDocIds);
     } catch (error) {
       toast({
         title: "Failed to load documents",
@@ -299,6 +317,13 @@ export default function DashboardPage() {
                               <Button variant="ghost" size="icon" asChild>
                                 <Link href={`/sign/${doc.id}`}>
                                   <PenTool className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {doc.is_signed && signedDocIds.has(doc.id) && (
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/verify/${signedDocIds.get(doc.id)}`}>
+                                  <ShieldCheck className="h-4 w-4" />
                                 </Link>
                               </Button>
                             )}
